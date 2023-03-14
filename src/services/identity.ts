@@ -19,6 +19,7 @@ const getMemberByAlias = async (alias: string) => {
 }
 
 const getMemberBySelf = async () => {
+  console.log(`${URL_PREFIX}/self`)
   const res = await fetch(`${URL_PREFIX}/self`)
 
   if (res.ok) {
