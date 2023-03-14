@@ -7,6 +7,29 @@ export interface ValidateErrorJSON {
   details: { [name: string]: unknown }
 }
 
+export class HttpResponseError extends Error {
+  public code: number
+  public message: string
+
+  constructor({ code = 500, message = 'Internal server error' }) {
+    super(message)
+    this.code = code
+    this.message = message
+  }
+}
+
+// export class BadRequestError extends HttpResponseError {
+//   constructor(message: string) {
+//     super({ code: 400, message: `Bad Request: ${message}` })
+//   }
+// }
+
+export class NotFoundError extends HttpResponseError {
+  constructor(message: string) {
+    super({ code: 404, message: `Not Found: ${message}` })
+  }
+}
+
 export const errorHandler = function errorHandler(
   err: unknown,
   req: ExRequest,
@@ -21,6 +44,11 @@ export const errorHandler = function errorHandler(
     }
     return res.status(422).json(response)
   }
+  if (err instanceof HttpResponseError) {
+    logger.debug(`Bad request for ${req.path}`)
+    return res.status(err.code).json(err.message)
+  }
+
   if (err instanceof Error) {
     logger.warn('Unexpected error thrown in handler: %s', err.message)
     return res.status(500).json({
